@@ -1,0 +1,6 @@
+{
+  "name": "BizLedger POS",
+  "description": "Production-ready Point of Sale (POS) & Customer/Supplier Ledger Management System for Pakistani SMBs with offline-first capability and thermal receipt printing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

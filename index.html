@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      /* Ensure window.fetch has a setter to avoid "Cannot set property fetch of #<Window> which has only a getter" */
+      (function() {
+        // Intercept Object.defineProperty so any script defining a getter on 'fetch' automatically gets a setter
+        var origDefineProperty = Object.defineProperty;
+        try {
+          Object.defineProperty = function(obj, prop, descriptor) {
+            try {
+              if (prop === 'fetch' && descriptor && typeof descriptor === 'object') {
+                if (descriptor.get && !descriptor.set) {
+                  var origGet = descriptor.get;
+                  var customVal;
+                  var hasCustom = false;
+                  descriptor.get = function() {
+                    return hasCustom ? customVal : origGet.call(this);
+                  };
+                  descriptor.set = function(val) {
+                    customVal = val;
+                    hasCustom = true;
+                  };
+                  descriptor.configurable = true;
+                }
+              }
+            } catch (_) {}
+            return origDefineProperty.call(Object, obj, prop, descriptor);
+          };
+        } catch (_) {}
+
+        // Ensure window.fetch currently has a setter
+        try {
+          var currentFetch = window.fetch ? window.fetch.bind(window) : null;
+          var activeFetch = currentFetch;
+          origDefineProperty.call(Object, window, 'fetch', {
+            get: function() { return activeFetch; },
+            set: function(fn) { activeFetch = fn; },
+            configurable: true,
+            enumerable: true
+          });
+        } catch (err) {
+          try {
+            if (typeof Window !== 'undefined' && Window.prototype) {
+              origDefineProperty.call(Object, Window.prototype, 'fetch', {
+                get: function() { return activeFetch; },
+                set: function(fn) { activeFetch = fn; },
+                configurable: true,
+                enumerable: true
+              });
+            }
+          } catch (_) {}
+        }
+
+        // Global error trap to suppress the specific harmless getter error if thrown by external iframe scripts
+        window.addEventListener('error', function(event) {
+          if (
+            event &&
+            event.message &&
+            event.message.indexOf('fetch') !== -1 &&
+            event.message.indexOf('getter') !== -1
+          ) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+      })();
+    </script>
+    <title>BizLedger POS — Point of Sale & Ledger Management System</title>
+    <meta name="description" content="Production-ready Point of Sale (POS) & Customer/Supplier Ledger Management System for Pakistani SMBs with offline-first capability and thermal receipt printing." />
+    <meta property="og:title" content="BizLedger POS — Point of Sale & Ledger Management System" />
+    <meta property="og:description" content="Production-ready Point of Sale (POS) & Customer/Supplier Ledger Management System for Pakistani SMBs with offline-first capability and thermal receipt printing." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body class="bg-[#edf0f5] text-slate-800 font-sans antialiased selection:bg-indigo-500 selection:text-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+

@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  bizledger-pos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bizledger-pos
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    volumes:
+      - bizledger_data:/app/data
+
+volumes:
+  bizledger_data:
